@@ -69,7 +69,6 @@ export default function Home() {
 
   return (
     <>
-      <Navbar />
       <main className="w-96 pt-10 md:w-full mx-auto flex flex-col items-center justify-center gap-8 p-2 mb-10 md:px-12 lg:px-24 xl:px-48 ">
         {movies.length > 0 ? (
           isLoading ? (

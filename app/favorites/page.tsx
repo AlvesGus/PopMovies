@@ -50,7 +50,6 @@ export default function FavoritesPage() {
   if (isLoading) {
     return (
       <>
-        <Navbar />
         <div className="w-full pt-10 p-4 md:px-12 lg:px-24 xl:px-48 flex flex-col items-center justify-center">
           <LoadingFavorite />
         </div>
@@ -60,8 +59,6 @@ export default function FavoritesPage() {
 
   return (
     <>
-      <Navbar />
-
       <div className="w-full pt-10 p-4 md:px-12 lg:px-24 xl:px-48">
         {movies.length === 0 ? (
           <div className="flex flex-col items-center justify-center">

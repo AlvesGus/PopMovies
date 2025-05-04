@@ -4,6 +4,7 @@ import { Lato } from "next/font/google";
 import SessionProvider from "./providers/session";
 import { getServerSession } from "next-auth";
 import { MoviesProvider } from "./providers/movies"; // Import the MoviesProvider
+import { Navbar } from "./_components/navbar";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -28,6 +29,7 @@ export default async function RootLayout({
       <body className="dark font-lato bg-zinc-950 text-white antialiased">
         <SessionProvider session={session}>
           <MoviesProvider > 
+            <Navbar/>
             {children}
           </MoviesProvider>
         </SessionProvider>

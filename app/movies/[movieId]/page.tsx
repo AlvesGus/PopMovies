@@ -133,8 +133,6 @@ export default function MoviePage({ params }: { params: string }) {
 
   return (
     <>
-      <Navbar />
-
       <div className="pt-10 p-4 md:px-12 lg:px-24 xl:px-48">
         <Button onClick={handleVoltar} variant="ghost">
           <ArrowLeft className="h-5 w-5" />

@@ -80,7 +80,6 @@ export default function CategoryPage() {
 
   return (
     <>
-      <Navbar />
       <main className="w-96  md:w-full mx-auto flex flex-col items-center justify-center gap-8 p-2 mb-10 md:px-12 lg:px-24 xl:px-48">
         <div className="w-full px-3 flex flex-col items-center justify-center gap-4 mt-5">
           <Select onValueChange={handleGenreChange}>

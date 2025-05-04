@@ -20,6 +20,10 @@ import { UserDropdown } from "./dropdown-menu";
 
 const NavItem = [
   {
+    label: "Melhores da semana",
+    href: "/trending",
+  },
+  {
     label: "Me surpreenda",
     href: "/",
   },
