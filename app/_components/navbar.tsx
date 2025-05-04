@@ -10,11 +10,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { UserDropdown } from "./dropdown-menu";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { use, useEffect, useState } from "react";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { AvatarFallback } from "@radix-ui/react-avatar";
+import { UserDropdown } from "./dropdown-menu";
 
 const NavItem = [
   {
@@ -33,14 +35,15 @@ const NavItem = [
 
 export const Navbar = () => {
   const { data: session } = useSession();
-  const [pathname, setPathname] = useState(''); 
+  const [pathname, setPathname] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     setPathname(window.location.pathname);
   }, []);
 
   return (
-    <div className="bg-zinc-950 h-14 flex items-center p-4 md:px-12 lg:px-24 xl:px-48 justify-between border-b shadow-sm">
+    <div className="h-14 flex items-center p-4 md:px-12 lg:px-24 xl:px-48 justify-between border-b shadow-sm">
       <div>
         <h1 className="text-xl font-bold tracking-wide">
           <a href="/">PopMovies</a>
@@ -69,6 +72,32 @@ export const Navbar = () => {
                 <a href={item.href}>{item.label}</a>
               </Button>
             ))}
+           <div className="relative">
+           <Button onClick={() => setIsOpen(!isOpen)} asChild >
+              <Avatar className="w-[200px]">
+                <AvatarImage
+                  src={session?.user?.image || ""}
+                  alt="profile picture"
+                  className="h-6 w-6 rounded-full"
+                />
+                <span>{session?.user?.name}</span>
+              </Avatar>
+            </Button>
+            {isOpen && (
+              <div className="w-[200px] absolute top-14 right-0 flex flex-col gap-2 bg-zinc-800 py-4 px-2 rounded-md">
+                <Button className="cursor-pointer flex justify-start">
+                  Configuração da conta
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="cursor-pointer flex justify-start"
+                >
+                  Sair
+                </Button>
+              </div>
+            )}
+           </div>
           </div>
           <div className="md:hidden">
             <Sheet>
@@ -77,7 +106,7 @@ export const Navbar = () => {
                   <Menu />
                 </Button>
               </SheetTrigger>
-              <SheetContent className="z-100000">
+              <SheetContent side="right">
                 <SheetHeader>
                   <SheetTitle className="text-lg">PopMovies</SheetTitle>
                 </SheetHeader>
@@ -91,7 +120,7 @@ export const Navbar = () => {
                   ))}
                 </div>
                 <SheetFooter className="mb-5">
-                  <SheetClose asChild>
+                  <SheetClose asChild className="bg-zinc-50">
                     <UserDropdown />
                   </SheetClose>
                 </SheetFooter>

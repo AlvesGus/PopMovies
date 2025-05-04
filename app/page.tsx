@@ -2,9 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Navbar } from "./_components/navbar";
 import { useMovies } from "./providers/movies";
-import { Heart, Star } from "lucide-react";
+import { ArrowRight, Heart, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Loading } from "./_components/loading";
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
 
 interface MoviesProps {
   id: string;
@@ -17,6 +19,7 @@ interface MoviesProps {
 }
 
 export default function Home() {
+  const { data: session } = useSession();
   const { GetMoviesRandom, isLoading, movies } = useMovies();
   const [isFavorite, setIsFavorite] = useState(false);
   const [currentMovie, setCurrentMovie] = useState<MoviesProps | null>(null);
@@ -33,6 +36,11 @@ export default function Home() {
   }, [movies]);
 
   const handleFavoriteMovie = (movie: MoviesProps): boolean => {
+    if (!session) {
+      alert("Você precisa estar logado para adicionar filmes aos favoritos.");
+      return false;
+    }
+
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     const isCurrentlyFavorite = favorites.some(
       (favorite: MoviesProps) => favorite.id === movie.id
@@ -44,14 +52,19 @@ export default function Home() {
         (favorite: MoviesProps) => favorite.id !== movie.id
       );
       localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-      setIsFavorite(false); 
+      setIsFavorite(false);
       return false;
     } else {
       updatedFavorites = [...favorites, movie];
       localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-      setIsFavorite(true); 
+      setIsFavorite(true);
       return true;
     }
+  };
+
+  const handleInfoMovies = (movieId: string) => {
+    const movie = movies.find((movie) => movie.id === movieId);
+    redirect(`/movies/${movieId}`);
   };
 
   return (
@@ -60,59 +73,64 @@ export default function Home() {
       <main className="w-96 pt-10 md:w-full mx-auto flex flex-col items-center justify-center gap-8 p-2 mb-10 md:px-12 lg:px-24 xl:px-48 ">
         {movies.length > 0 ? (
           isLoading ? (
-            <Loading/>
+            <Loading />
           ) : (
-            <div>
+            <div className="border border-border rounded-md px-4">
               {movies.map((movie) => (
-                <div
-                  key={movie.id}
-                  className="bg-zinc-950 lg:h-[500px] rounded-lg border border-border flex flex-col xl:flex-row xl:gap-10 lg:items-center lg:w-full "
-                >
-                  <div className="relative w-full">
+                <div key={movie.id}>
+                  <h2 className="mt-3 text-3xl font-bold tracking-wide px-2 pb-5">
+                    {movie.title}
+                  </h2>
+                  <div className="relative pt-5 gap-3 flex flex-col items-center justify-center md:flex-row md:items-start md:justify-center md:gap-10">
                     <img
                       src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
                       alt={movie.title}
-                      className="object-fit w-full lg:h-[500px] rounded-t-lg xl:rounded-l-lg xl:rounded-r-none"
+                      className="h-full rounded-md border border-border"
                     />
-                   <div className="absolute w-full h-10 bottom-0 left-0 bg-gradient-to-t from-zinc-900/80 to-transparent z-100"></div>
-                    <div className="absolute top-2 right-2 flex items-center justify-center gap-2 text-lg px-4 py-2 bg-zinc-950 rounded-full">
-                      <Star className="text-yellow-500 fill-yellow-500 w-4 h-4" />
-                      {movie.vote_average.toFixed(1)}
+                    <div className="flex flex-col justify-center gap-10 md:h-[400px] md:w-[500px]">
+                      <span className="text-2xl text-white text-start">
+                        Sinopse
+                      </span>
+                      <div>
+                        <p className="text-lg text-white text-start line-clamp-6">
+                          {movie.overview}
+                        </p>
+                      </div>
+                      <div className="pt-5">
+                        <span>
+                          Ano de lançamento:{" "}
+                          {new Date(movie.release_date).toLocaleDateString(
+                            "pt-BR",
+                            {
+                              year: "numeric",
+                            }
+                          )}
+                        </span>
+                        <Button
+                          onClick={() => handleFavoriteMovie(movie)}
+                          variant="outline"
+                          className="w-full px-4 cursor-pointer text-lg tracking-wide mt-3"
+                        >
+                          Favoritar
+                          <Heart
+                            className={
+                              isFavorite ? "fill-red-500 text-red-500" : ""
+                            }
+                          />
+                        </Button>
+                      </div>
+                    <Button
+                      variant="action"
+                      onClick={GetMoviesRandom}
+                      className="w-full cursor-pointer px-4 text-lg tracking-wide mb-5"
+                    >
+                      Nova recomendação
+                    </Button>
                     </div>
                   </div>
-
-                  <div className="flex flex-col justify-between gap-2 md:max-w-[500px] md:justify-between lg:h-[450px] lg:mr-10">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                    <h2 className="mt-3 text-center text-3xl font-bold tracking-wide px-2">
-                      {movie.title}
-                    </h2>
-                    <span className="text-center text-zinc-400">Ano de lançamento: {new Date(movie.release_date).toLocaleDateString('pt-BR', { year: 'numeric' })}</span>
-                    </div>
-                    <p className="px-3 text-start text-md line-clamp-4 lg:line-clamp-none">
-                      {movie.overview}
-                    </p>
-                    <div className="flex flex-col items-center justify-center gap-4  px-2">
-                      <Button
-                        onClick={() => handleFavoriteMovie(movie)}
-                        variant="outline"
-                        className="w-full px-4 cursor-pointer text-lg tracking-wide"
-                      >
-                        Favoritar
-                        <Heart
-                          className={
-                            isFavorite ? "fill-red-500 text-red-500" : ""
-                          }
-                        />
-                      </Button>
-                      <Button
-                        variant="action"
-                        onClick={GetMoviesRandom}
-                        className="w-full cursor-pointer px-4 text-lg tracking-wide"
-                      >
-                        Nova recomendação
-                      </Button>
-                    </div>
-                  </div>
+                  <div className="flex items-center justify-end gap-2 text-lg px-4 py-5  rounded-full text-zinc-400">
+                  <Button onClick={() => handleInfoMovies(movie.id)} variant='ghost'>Ver mais <ArrowRight/></Button>
+                </div>
                 </div>
               ))}
             </div>
@@ -124,8 +142,8 @@ export default function Home() {
               o final de semana
             </h1>
             <div className="relative mt-10 w-full flex items-center justify-center">
-              <div className="absolute w-full h-10 top-0 left-0 bg-gradient-to-b from-zinc-900/80 to-transparent z-100"></div>
-              <div className="absolute w-full h-10 bottom-0 left-0 bg-gradient-to-t from-zinc-900/80 to-transparent z-100"></div>
+              <div className="absolute w-full h-10 top-0 left-0 bg-gradient-to-b from-zinc-950/80 to-transparent z-2"></div>
+              <div className="absolute w-full h-10 bottom-0 left-0 bg-gradient-to-t from-zinc-950/80 to-transparent z-2"></div>
               <img
                 src="./backdrop.png"
                 alt=""

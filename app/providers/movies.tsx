@@ -23,6 +23,7 @@ export interface MoviesContextType {
   isLoading: boolean;
   genres: GenresProps[];
   moviesId: MoviesProps[];
+  trailer: any[];
 }
 
 export interface GenresProps {
@@ -36,6 +37,7 @@ export function MoviesProvider({ children }: MoviesProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [genres, setGenres] = useState<any[]>([]);
   const [moviesId, setMoviesId] = useState<MoviesProps[]>([]);
+  const [trailer, setTrailer] = useState<any[]>([]);
 
   const GetMoviesRandom = async () => {
     setIsLoading(true);
@@ -53,7 +55,7 @@ export function MoviesProvider({ children }: MoviesProviderProps) {
 
     try {
       const response = await fetch(
-        `https://api.themoviedb.org/3/discover/movie?&include_adult=false&include_video=false&language=pt-BR&primary_release_date.gte=2018-01-01&primary_release_date.lte=2025-12-31&page=${randomPage}&sort_by=popularity.desc&vote_average.gte=8&vote_average.lte=10`,
+        `https://api.themoviedb.org/3/discover/movie?&include_adult=false&include_video=true&language=pt-BR&primary_release_date.gte=2018-01-01&primary_release_date.lte=2025-12-31&page=${randomPage}&sort_by=popularity.desc&vote_average.gte=8&vote_average.lte=10`,
         options
       );
       const data = await response.json();
@@ -124,32 +126,42 @@ export function MoviesProvider({ children }: MoviesProviderProps) {
         } else {
           setMoviesId([]);
           console.warn("Nenhum filme válido encontrado para este gênero na página.");
+          GetMoviesWithGenreId(genreId);
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 3000);
         }
       } else if (data && data.total_results === 0) {
         setMoviesId([]);
         console.warn("Nenhum filme encontrado para este gênero.");
+        GetMoviesWithGenreId(genreId);
+        setTimeout(() => {
+            setIsLoading(false);
+          }, 3000); 
       } else {
         setMoviesId([]);
         console.error("Resposta da API inválida:", data);
+        GetMoviesWithGenreId(genreId);
+        setTimeout(() => {
+            setIsLoading(false);
+          }, 3000);
       }
     } catch (error) {
       console.error("Erro ao buscar filmes:", error);
-      setMoviesId([]); // Limpe os filmes em caso de erro
+      setMoviesId([]); 
     } finally {
       setTimeout(() => {
-        setIsLoading(false); // Defina isLoading como false no final da tentativa
+        setIsLoading(false);
       }, 2000);
     }
   };
 
   return (
-    <MoviesContext.Provider value={{ GetMoviesRandom, movies, isLoading, GetGenreMovies, genres, GetMoviesWithGenreId, moviesId }}>
+    <MoviesContext.Provider value={{ GetMoviesRandom, movies, isLoading, GetGenreMovies, genres, GetMoviesWithGenreId, moviesId, trailer }}>
       {children}
     </MoviesContext.Provider>
   );
-}export const useMovies = () => {
-  const context = useContext(MoviesContext);
-  if (!context) {
+}export const useMovies = () => {  const context = useContext(MoviesContext);  if (!context) {
     throw new Error('useMovies must be used within a MoviesProvider');
   }
   return context;

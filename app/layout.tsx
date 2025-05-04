@@ -25,7 +25,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${lato.variable} `}>
-      <body className="dark font-lato bg-zinc-900 text-white antialiased">
+      <body className="dark font-lato bg-zinc-950 text-white antialiased">
         <SessionProvider session={session}>
           <MoviesProvider > 
             {children}

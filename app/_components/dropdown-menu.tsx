@@ -1,43 +1,31 @@
-'use client' 
+'use client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
-import { ChevronDown, LogOut, SquareUser } from 'lucide-react'
+import { LogOut, SquareUser } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useState } from 'react'
 
 export const UserDropdown = () => {
-  const {data: session} = useSession()
-  
+   const {data: session} = useSession()
+   const [isOpen, setIsOpen] = useState(false)
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button className="w-full gap-2 justify-start px-2">
-          <Avatar className="block w-7 h-7">
-            <AvatarImage src={session?.user?.image || undefined} />
+      <>
+        <div className='w-full relative'>
+        <Button onClick={() => setIsOpen(!isOpen)} className='cursor-pointer flex justify-start' asChild>
+          <Avatar className='w-full'>
+            <AvatarImage src={session?.user?.image || ''} alt='profile picture' className='h-6 w-6 rounded-full' />
+            <span>{session?.user?.name}</span>
           </Avatar>
-          <p>{session?.user?.name}</p>
-          <ChevronDown size={16} />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="center"
-        className="w-[var(--radix-dropdown-menu-trigger-width)] "
-      >
-        <Link passHref href="/dashboard/account">
-          <DropdownMenuItem className="gap-2 hover:bg-zinc-800 mb-2">
-            Configurações de conta
-          </DropdownMenuItem>
-        </Link>
-        <DropdownMenuItem onClick={() => signOut({callbackUrl:'/'})} className="gap-2 cursor-pointer hover:bg-zinc-800">
-          Sair
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        {isOpen && (
+          <div className='absolute bottom-14 flex flex-col gap-2 w-full bg-zinc-800 py-4 px-2 rounded-md'>
+            <Button className='cursor-pointer flex justify-start'>Configuração da conta</Button>
+            <Button variant='destructive' onClick={() => signOut({callbackUrl: '/'})} className='cursor-pointer flex justify-start'>Sair</Button>
+          </div>
+        )}
+        </div>
+      </>
   )
 }
