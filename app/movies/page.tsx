@@ -1,11 +1,7 @@
-import dynamic from "next/dynamic";
-
-const MoviePageClient = dynamic(() => import("./[movieId]/dinamyc"), {
-  ssr: false, // impede renderização do lado do servidor
-});
+import MoviePageClient from "./[movieId]/dinamyc";
 
 export default function Page() {
-  return < MoviePageClient params={{
+  return <MoviePageClient params={{
       movieId: ""
-  }}/>;
+  }} />;
 }
