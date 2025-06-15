@@ -37,11 +37,11 @@ interface PageProps {
   };
 }
 
-export default function MoviePage({ params }: PageProps) {
+export default function MoviePage() {
+  const { movieId } = useParams() as { movieId: string };
   const { data: session } = useSession();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { movieId } = useParams() as { movieId: string };
   const [movie, setMovie] = useState<MoviesProps | null>(null);
   const [credits, setCredits] = useState<any[]>([]);
   const router = useRouter();
