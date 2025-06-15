@@ -21,7 +21,6 @@ export const UserDropdown = () => {
         </Button>
         {isOpen && (
           <div className='absolute bottom-14 flex flex-col gap-2 w-full bg-zinc-800 py-4 px-2 rounded-md'>
-            <Button className='cursor-pointer flex justify-start'>Configuração da conta</Button>
             <Button variant='destructive' onClick={() => signOut({callbackUrl: '/'})} className='cursor-pointer flex justify-start'>Sair</Button>
           </div>
         )}

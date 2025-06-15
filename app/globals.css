@@ -16,6 +16,8 @@
     --color-action-900: #2c387c;
     --color-action-950: #1f244c;
 
+    --breakpoint-xs: 32rem;
+
 }
 
 @theme inline {

@@ -90,46 +90,38 @@ export default function FavoritesPage() {
             {movies.map((movie) => (
               <div
                 key={movie.id}
-                className=" rounded-lg border border-border w-full flex flex-col justify-between md:h-[550px]"
+                className="border border-border rounded-md pb-5 bg-zinc-900"
               >
-                <div className="relative">
-                  <img
-                    src={`https://image.tmdb.org/t/p/w300${movie.backdrop_path}`}
-                    alt={movie.title}
-                    className="object-fill w-full rounded-t-lg xl:rounded-l-lg xl:rounded-r-none"
-                  />
-                  <div className="absolute bg-zinc-950 top-2 right-2 flex items-center justify-center gap-2 text-lg px-4 py-2  rounded-full">
-                    <Star className="text-yellow-500 fill-yellow-500 w-4 h-4" />
-                    {movie.vote_average.toFixed(1)}
-                  </div>
+                <img
+                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                  alt={movie.title}
+                  className="w-full rounded-t-md"
+                />
+                <div className="px-2 pt-2 ">
+                  <h2 className="text-xl">{movie.title}</h2>
+                  <span className="text-sm md:text-md text-zinc-400">
+                    Lançamento:{" "}
+                    {new Date(movie.release_date).toLocaleDateString("pt-BR", {
+                      year: "numeric",
+                    })}
+                  </span>
                   <div>
-                    <p className="text-xl text-center tracking-wide pt-4 h-20">
-                      {movie.title}
-                    </p>
-                    <span className="w-full flex items-center justify-center gap-1 text-zinc-400">
-                      Ano de lançamento:
-                      <span>
-                        {new Date(movie.release_date).toLocaleDateString(
-                          "pt-BR",
-                          {
-                            year: "numeric",
-                          }
-                        )}
-                      </span>
-                    </span>
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleRemoveFavoriteMovie(movie.id)}
+                      className="w-full my-2"
+                    >
+                      Remover dos favoritos
+                    </Button>
                   </div>
-                </div>
-                <div className="w-full px-4 py-5 space-y-2">
-                  <Button
-                    variant="destructive"
-                    className="w-full px-4 cursor-pointer text-lg tracking-wide"
-                    onClick={() => handleRemoveFavoriteMovie(movie.id)}
-                  >
-                    Remover dos favoritos
-                  </Button>
-                </div>
-                <div className="flex items-center justify-end gap-2 text-lg px-4 py-2  rounded-full text-zinc-400">
-                  <Button onClick={() => handleInfoMovies(movie.id)} variant='ghost'>Ver mais <ArrowRight/></Button>
+                  <div className="flex items-center justify-end gap-2 text-xs rounded-md text-zinc-400">
+                    <Button
+                      onClick={() => handleInfoMovies(movie.id)}
+                      variant="ghost"
+                    >
+                      Ver mais <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

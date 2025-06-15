@@ -4,8 +4,15 @@ import { Navbar } from "@/app/_components/navbar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Heart, Star, User } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { redirect, useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  redirect,
+  useParams,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { use, useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface MoviesProps {
   id: string;
@@ -24,10 +31,14 @@ interface MoviesProps {
   }[];
 }
 
+interface PageProps {
+  params: {
+    movieId: string;
+  };
+}
 
-
-export default function MoviePage({ params }: { params: string }) {
-  const {data: session} = useSession()
+export default function MoviePage({ params }: PageProps) {
+  const { data: session } = useSession();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { movieId } = useParams() as { movieId: string };
@@ -36,25 +47,20 @@ export default function MoviePage({ params }: { params: string }) {
   const router = useRouter();
 
   const searchParams = useSearchParams();
-  const from = searchParams.get('from');
+  const from = searchParams.get("from");
 
   const [currentMovie, setCurrentMovie] = useState<MoviesProps | null>(null);
-  
-    useEffect(() => {
 
-
-      if (movie) {
-        setCurrentMovie(movie);
-        const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-        const alreadyFavorite = favorites.some(
-
-          (favorite: MoviesProps) => favorite.id === movie.id
-        );
-        setIsFavorite(alreadyFavorite);
-      }
-    }, [movie]);  
-
-
+  useEffect(() => {
+    if (movie) {
+      setCurrentMovie(movie);
+      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+      const alreadyFavorite = favorites.some(
+        (favorite: MoviesProps) => favorite.id === movie.id
+      );
+      setIsFavorite(alreadyFavorite);
+    }
+  }, [movie]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -87,17 +93,18 @@ export default function MoviePage({ params }: { params: string }) {
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
-        setCredits(data.cast)
+        setCredits(data.cast);
       })
       .catch((error) => {
         console.error(error);
       });
   }, [movieId]);
 
-
   const handleFavoriteMovie = (movie: MoviesProps): boolean => {
     if (!session) {
-      alert("Você precisa estar logado para adicionar filmes aos favoritos.");
+      toast.error(
+        "Você precisa estar logado para adicionar filmes aos favoritos."
+      );
       return false;
     }
 
@@ -124,7 +131,6 @@ export default function MoviePage({ params }: { params: string }) {
 
   const handleVoltar = () => {
     if (from) {
-      // volta para a origem esperada
       window.location.href = `/${from}`;
     } else {
       window.location.href = "/";
@@ -133,6 +139,7 @@ export default function MoviePage({ params }: { params: string }) {
 
   return (
     <>
+      <ToastContainer autoClose={3000} theme="dark" />
       <div className="pt-10 p-4 md:px-12 lg:px-24 xl:px-48">
         <Button onClick={handleVoltar} variant="ghost">
           <ArrowLeft className="h-5 w-5" />
@@ -140,20 +147,20 @@ export default function MoviePage({ params }: { params: string }) {
         </Button>
       </div>
 
-      <main className="w-full pt-10 p-4 md:px-12 lg:px-24 xl:px-48">
+      <main className="w-full pt-3 p-5 md:px-12 lg:px-24 xl:px-48 mb-10">
         {movie && (
-          <div className="border border-border px-3 rounded-md pb-5">
+          <div className="border border-border px-5 rounded-md">
             <h2 className="mt-3 w-full text-3xl font-bold tracking-wide">
               {movie.title}
             </h2>
-            <div className="relative pt-5 gap-3 flex flex-col items-center justify-center md:flex-row md:items-start md:justify-center md:gap-10">
+            <div className="relative pt-5 gap-3 flex flex-col md:flex-row md:gap-10">
               <img
                 src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
                 alt={movie.title}
                 className="h-full rounded-md border border-border"
               />
               <div className="flex flex-col justify-center gap-10 h-[400px] md:w-[500px] md:h-auto">
-                <span className="text-2xl text-white text-start">Sinopse</span>
+                <span className="pt-5 text-2xl lg:pt-0 text-white text-start">Sinopse</span>
                 <div>
                   <p className="text-lg text-white text-start line-clamp-6">
                     {movie.overview}
@@ -171,39 +178,43 @@ export default function MoviePage({ params }: { params: string }) {
                     Gênero: {movie.genres.map((genre) => genre.name).join(", ")}
                   </p>
                   <div className="pt-5">
-                  <Button
-                        onClick={() => handleFavoriteMovie(movie)}
-                        variant="outline"
-                        className="w-full px-4 cursor-pointer text-lg tracking-wide "
-                      >
-                        Favoritar
-                        <Heart
-                          className={
-                            isFavorite ? "fill-red-500 text-red-500" : ""
-                          }
-                        />
-                      </Button>
+                    <Button
+                      onClick={() => handleFavoriteMovie(movie)}
+                      variant="outline"
+                      className="w-full px-4 cursor-pointer text-lg tracking-wide "
+                    >
+                      Favoritar
+                      <Heart
+                        className={
+                          isFavorite ? "fill-red-500 text-red-500" : ""
+                        }
+                      />
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
-            <div>
+            <div className="mb-5">
               <p className="text-xl py-5">Atores:</p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
                 {credits.slice(0, 6).map((credit) => (
-                  <div key={credit.id} >
-                   <div>
-                    {credit.profile_path ? (
-                      <div className="w-[150px]">
-                        <img src={`https://image.tmdb.org/t/p/w500${credit.profile_path}`} alt="profile actor" className="rounded-md" />
+                  <div key={credit.id}>
+                    <div>
+                      {credit.profile_path ? (
+                        <div className="w-[150px]">
+                          <img
+                            src={`https://image.tmdb.org/t/p/w500${credit.profile_path}`}
+                            alt="profile actor"
+                            className="rounded-md"
+                          />
                         </div>
-                    ) : (
-                      <div className="w-[150px] h-[225px] border border-border rounded-md">
-                        <User className="w-full h-full text-zinc-400" />
-                      </div>
-                    )}
-                    <p className="w-[150px] pt-2">{credit.character}</p>
-                    <p className="text-zinc-400 w-[150px]">{credit.name}</p>
+                      ) : (
+                        <div className="w-[150px] h-[225px] border border-border rounded-md">
+                          <User className="w-full h-full text-zinc-400" />
+                        </div>
+                      )}
+                      <p className="w-[150px] pt-2">{credit.character}</p>
+                      <p className="text-zinc-400 w-[150px]">{credit.name}</p>
                     </div>
                   </div>
                 ))}
@@ -214,5 +225,4 @@ export default function MoviePage({ params }: { params: string }) {
       </main>
     </>
   );
-
 }

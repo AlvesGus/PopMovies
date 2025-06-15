@@ -17,15 +17,16 @@ import { use, useEffect, useState } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { AvatarFallback } from "@radix-ui/react-avatar";
 import { UserDropdown } from "./dropdown-menu";
+import { redirect } from "next/dist/server/api-utils";
 
 const NavItem = [
   {
-    label: "Melhores da semana",
+    label: "Em alta",
     href: "/trending",
   },
   {
     label: "Me surpreenda",
-    href: "/",
+    href: "/recommendations",
   },
   {
     label: "Por categoria",
@@ -36,6 +37,10 @@ const NavItem = [
     href: "/favorites",
   },
 ];
+
+const redirectTrending = () => {
+  window.location.href = "/trending";
+};
 
 export const Navbar = () => {
   const { data: session } = useSession();
@@ -54,16 +59,21 @@ export const Navbar = () => {
         </h1>
       </div>
       {!session ? (
-        <Button
-          onClick={() => signIn("google", { callbackUrl: "/" })}
-          className="cursor-pointer"
-          size="sm"
-        >
-          Login
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={redirectTrending}>
+            Em alta
+          </Button>
+          <Button
+            onClick={() => signIn("google", { callbackUrl: "/trending" })}
+            className="cursor-pointer"
+            variant='action'
+          >
+            Entrar
+          </Button>
+        </div>
       ) : (
         <>
-          <div className="md:flex gap-3 hidden">
+          <div className="lg:flex gap-3 hidden">
             {NavItem.map((item) => (
               <Button
                 key={item.label}
@@ -73,37 +83,36 @@ export const Navbar = () => {
                 variant="ghost"
                 asChild
               >
-                <a href={item.href}>{item.label}</a>
+                <a className="text-sm lg:text-base" href={item.href}>
+                  {item.label}
+                </a>
               </Button>
             ))}
-           <div className="relative">
-           <Button onClick={() => setIsOpen(!isOpen)} asChild >
-              <Avatar className="w-[200px]">
-                <AvatarImage
-                  src={session?.user?.image || ""}
-                  alt="profile picture"
-                  className="h-6 w-6 rounded-full"
-                />
-                <span>{session?.user?.name}</span>
-              </Avatar>
-            </Button>
-            {isOpen && (
-              <div className="w-[200px] absolute top-14 right-0 flex flex-col gap-2 bg-zinc-800 py-4 px-2 rounded-md">
-                <Button className="cursor-pointer flex justify-start">
-                  Configuração da conta
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="cursor-pointer flex justify-start"
-                >
-                  Sair
-                </Button>
-              </div>
-            )}
-           </div>
+            <div className="relative">
+              <Button onClick={() => setIsOpen(!isOpen)} asChild>
+                <Avatar className="w-[200px]">
+                  <AvatarImage
+                    src={session?.user?.image || ""}
+                    alt="profile picture"
+                    className="h-6 w-6 rounded-full"
+                  />
+                  <span>{session?.user?.name}</span>
+                </Avatar>
+              </Button>
+              {isOpen && (
+                <div className="w-[200px] absolute top-14 right-0 flex flex-col gap-2 bg-zinc-800 py-4 px-2 rounded-md">
+                  <Button
+                    variant="destructive"
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="cursor-pointer flex justify-start"
+                  >
+                    Sair
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline">
@@ -117,7 +126,7 @@ export const Navbar = () => {
                 <div className="w-full flex flex-col gap-5">
                   {NavItem.map((item) => (
                     <div className="px-4" key={item.label}>
-                      <Button className="w-full cursor-pointer" asChild>
+                      <Button className="w-full cursor-pointer text-sm" asChild>
                         <a href={item.href}>{item.label}</a>
                       </Button>
                     </div>

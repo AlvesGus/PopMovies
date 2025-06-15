@@ -19,11 +19,12 @@ export interface MoviesContextType {
   GetMoviesRandom: () => Promise<void>;
   GetGenreMovies: () => Promise<void>;
   GetMoviesWithGenreId: (genreId: string) => Promise<void>;
+  GetTrendingMoviesWithWeek: () => Promise<void>;
   movies: MoviesProps[];
   isLoading: boolean;
   genres: GenresProps[];
   moviesId: MoviesProps[];
-  trailer: any[];
+  trending: MoviesProps[];
 }
 
 export interface GenresProps {
@@ -37,7 +38,8 @@ export function MoviesProvider({ children }: MoviesProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [genres, setGenres] = useState<any[]>([]);
   const [moviesId, setMoviesId] = useState<MoviesProps[]>([]);
-  const [trailer, setTrailer] = useState<any[]>([]);
+  const [trending, setTrending] = useState<MoviesProps[]>([]);
+
 
   const GetMoviesRandom = async () => {
     setIsLoading(true);
@@ -156,8 +158,35 @@ export function MoviesProvider({ children }: MoviesProviderProps) {
     }
   };
 
+  const GetTrendingMoviesWithWeek =  async () => {
+    setIsLoading(true);
+    const options = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlMjRmMGRmNzQ2ZDUwZDEwYmZiOWRhNDEzOTkxYzNkZiIsIm5iZiI6MTcwNTUyMjM3Ny4yMDQsInN1YiI6IjY1YTgzNGM5ZWEzOTQ5MDEzMTFlZmMyMyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.NyhDFIoC2y72dh5rNdv5rh1IFib7PoGB8nctJIZLD2E'
+      }
+    };
+    
+    try {
+      const response = await fetch(
+        'https://api.themoviedb.org/3/trending/movie/week?language=pt-BR',
+        options
+      );
+      const data = await response.json();
+      setTrending(data.results || []); 
+      console.log(data);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
+      }catch (error) {
+        console.error(error);
+      }
+  } 
+  
+
   return (
-    <MoviesContext.Provider value={{ GetMoviesRandom, movies, isLoading, GetGenreMovies, genres, GetMoviesWithGenreId, moviesId, trailer }}>
+    <MoviesContext.Provider value={{ GetMoviesRandom, movies, isLoading, GetGenreMovies, genres, GetMoviesWithGenreId, moviesId, GetTrendingMoviesWithWeek, trending }}>
       {children}
     </MoviesContext.Provider>
   );

@@ -1,21 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Navbar } from "../_components/navbar";
 import { useMovies } from "../providers/movies";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Star } from "lucide-react";
-import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Loading } from "../_components/loading";
 import { useSession } from "next-auth/react";
-import { ToastContainer, toast } from "react-toastify";
+import { redirect } from "next/navigation";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 interface MoviesProps {
@@ -28,45 +20,33 @@ interface MoviesProps {
   release_date: string;
 }
 
-export default function CategoryPage() {
-  const { GetGenreMovies, genres, GetMoviesWithGenreId, moviesId, isLoading } =
-    useMovies();
-    const {data: session} = useSession();
+export default function Home() {
+  const { data: session } = useSession();
+  const { GetMoviesRandom, isLoading, movies } = useMovies();
   const [isFavorite, setIsFavorite] = useState(false);
-  const [selectedGenreId, setSelectedGenreId] = useState<string | null>(null);
-  
+  const [currentMovie, setCurrentMovie] = useState<MoviesProps | null>(null);
 
   useEffect(() => {
-    GetGenreMovies();
-  }, []);
-
-  const handleGenreChange = (value: string) => {
-    setSelectedGenreId(value);
-  };
-
-  const handleRecommendationClick = async () => {
-    if (selectedGenreId) {
-      await GetMoviesWithGenreId(selectedGenreId);
-    } else {
-      toast.warn("Por favor, selecione um gênero antes de pedir uma recomendação."),{
-        style:{
-           maxWidth: '200px'
-        }
-      };
+    if (movies.length > 0) {
+      setCurrentMovie(movies[0]);
+      const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+      const alreadyFavorite = favorites.some(
+        (favorite: MoviesProps) => favorite.id === movies[0].id
+      );
+      setIsFavorite(alreadyFavorite);
     }
-  };
-
-  const handleInfoMovies = (movieId: string) => {
-    const movie = moviesId;
-    redirect(`/movies/${movieId}?from=categories`);;
-  };
-  
+  }, [movies]);
 
   const handleFavoriteMovie = (movie: MoviesProps): boolean => {
-    if(!session) {
-      toast.error('Você precisa estar logado para favoritar um filme');
+    if (!session) {
+      toast.error("Você precisa estar logado para favoritar um filme!", {
+        style: {
+          maxWidth: "90vw",
+        },
+      });
       return false;
     }
+
     const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
     const isCurrentlyFavorite = favorites.some(
       (favorite: MoviesProps) => favorite.id === movie.id
@@ -88,42 +68,26 @@ export default function CategoryPage() {
     }
   };
 
+  const handleInfoMovies = (movieId: string) => {
+    const movie = movies.find((movie) => movie.id === movieId);
+    redirect(`/movies/${movieId}`);
+  };
 
   return (
     <>
-    <ToastContainer autoClose={3000} theme="dark" />
-      <main className="pt-10 w-96  md:w-full mx-auto flex flex-col items-center justify-center gap-8 p-2 mb-10 md:px-12 lg:px-24 xl:px-48">
-       <h1 className="text-4xl tracking-wide mb-10">Selecione o gênero desejado para receber recomendações</h1>
-        <div className="w-full  flex flex-col items-center justify-center gap-4">
-          <Select onValueChange={handleGenreChange}>
-            <SelectTrigger className="w-full lg:w-1/2">
-              <SelectValue placeholder="Selecione um gênero" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Gêneros</SelectLabel>
-                {genres.map((genre) => (
-                  <SelectItem key={genre.id} value={genre.id.toString()}>
-                    {genre.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          {moviesId.length === 0 && (
-            <Button
-              variant="action"
-              onClick={handleRecommendationClick}
-              className="w-full lg:w-1/2 cursor-pointer"
-              disabled={!selectedGenreId}
-            >
-              Nova recomendação
-            </Button>
-          )}
-        </div>
-        {moviesId.length > 0 && (
-           <div className="border border-border rounded-md">
-              {moviesId.map((movie) => (
+      <ToastContainer
+        autoClose={3000}
+        theme="dark"
+        position="top-right"
+        closeButton={false}
+      />
+      <main className="w-96 py-10 md:w-full mx-auto flex flex-col items-center justify-center gap-8 p-2 mb-10 md:px-12 lg:px-24 xl:px-48 ">
+        {movies.length > 0 ? (
+          isLoading ? (
+            <Loading />
+          ) : (
+            <div className="border border-border rounded-md">
+              {movies.map((movie) => (
                 <div key={movie.id}>
                   <div className="relative flex flex-col items-center justify-center md:flex-row md:items-start md:mx-auto">
                     <img
@@ -168,7 +132,8 @@ export default function CategoryPage() {
                       </div>
                       <Button
                         variant="action"
-                        onClick={() => selectedGenreId && GetMoviesWithGenreId(selectedGenreId)}                        className="w-full cursor-pointer px-4 text-lg tracking-wide mb-5"
+                        onClick={GetMoviesRandom}
+                        className="w-full cursor-pointer px-4 text-lg tracking-wide mb-5"
                       >
                         Nova recomendação
                       </Button>
@@ -183,7 +148,30 @@ export default function CategoryPage() {
                     </div>
                   </div>
                 </div>
-              ))}            </div>
+              ))}
+            </div>
+          )
+        ) : (
+          <>
+            <h1 className="text-center text-2xl tracking-wide">
+              Aqui você poderá receber novas recomendações de filmes para animar seu dia
+            </h1>
+            <div className="relative mt-10 w-full flex items-center justify-center">
+              <div className="absolute w-full h-10 top-0 left-0 bg-gradient-to-b from-zinc-950/80 to-transparent z-2"></div>
+              <div className="absolute w-full h-10 bottom-0 left-0 bg-gradient-to-t from-zinc-950/80 to-transparent z-2"></div>
+              <img
+                src="./backdrop.png"
+                className="brightness-50 rounded-md shadow-md lg:w-1/2"
+              />
+            </div>
+            <Button
+              variant="action"
+              onClick={GetMoviesRandom}
+              className="w-full max-w-96 cursor-pointer mb-10 mt-10 text-lg tracking-wide"
+            >
+              Nova recomendação
+            </Button>
+          </>
         )}
       </main>
     </>
