@@ -1,4 +1,4 @@
-import MoviePageClient from "./[movieId]/dinamyc";
+import MoviePageClient from "./dinamyc";
 
 export default function Page() {
   return <MoviePageClient params={{
