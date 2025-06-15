@@ -35,10 +35,10 @@ interface PageProps {
   params: {
     movieId: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default function MoviePage() {
-  const { movieId } = useParams() as { movieId: string };
+export default async function MoviePage({ params, searchParams }: PageProps) {
   const { data: session } = useSession();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,8 +46,8 @@ export default function MoviePage() {
   const [credits, setCredits] = useState<any[]>([]);
   const router = useRouter();
 
-  const searchParams = useSearchParams();
-  const from = searchParams.get("from");
+  const movieId = params.movieId;
+  const from = searchParams?.from;
 
   const [currentMovie, setCurrentMovie] = useState<MoviesProps | null>(null);
 
