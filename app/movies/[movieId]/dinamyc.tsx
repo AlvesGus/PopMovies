@@ -35,20 +35,17 @@ interface PageProps {
   params: {
     movieId: string;
   };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  
 }
 
-export default async function MoviePage({ params, searchParams }: PageProps) {
+export default function MoviePage({ params }: { params: { movieId: string } }) {
+ const { movieId } = useParams();
   const { data: session } = useSession();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [movie, setMovie] = useState<MoviesProps | null>(null);
   const [credits, setCredits] = useState<any[]>([]);
   const router = useRouter();
-
-  const movieId = params.movieId;
-  const from = searchParams?.from;
-
   const [currentMovie, setCurrentMovie] = useState<MoviesProps | null>(null);
 
   useEffect(() => {
@@ -130,13 +127,13 @@ export default async function MoviePage({ params, searchParams }: PageProps) {
   };
 
   const handleVoltar = () => {
+    const from = window.location.pathname.split('/')[1];
     if (from) {
       window.location.href = `/${from}`;
     } else {
       window.location.href = "/";
     }
   };
-
   return (
     <>
       <ToastContainer autoClose={3000} theme="dark" />
