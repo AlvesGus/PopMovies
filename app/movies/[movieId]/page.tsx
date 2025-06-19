@@ -4,10 +4,15 @@ import { Navbar } from "@/app/_components/navbar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Heart, Star, User } from "lucide-react";
 import { useSession } from "next-auth/react";
+import {
+  redirect,
+  useParams,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useParams } from "next/navigation";
 
 interface MoviesProps {
   id: string;
@@ -30,16 +35,20 @@ interface PageProps {
   params: {
     movieId: string;
   };
-  
 }
 
-export default async function MoviePage({ params }: { params: { movieId: string } }) {
-  const { movieId } = await useParams();
+export default function MoviePage({ params }: PageProps) {
   const { data: session } = useSession();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { movieId } = useParams() as { movieId: string };
   const [movie, setMovie] = useState<MoviesProps | null>(null);
   const [credits, setCredits] = useState<any[]>([]);
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from");
+
   const [currentMovie, setCurrentMovie] = useState<MoviesProps | null>(null);
 
   useEffect(() => {
@@ -121,13 +130,13 @@ export default async function MoviePage({ params }: { params: { movieId: string 
   };
 
   const handleVoltar = () => {
-    const from = window.location.pathname.split('/')[1];
     if (from) {
       window.location.href = `/${from}`;
     } else {
       window.location.href = "/";
     }
   };
+
   return (
     <>
       <ToastContainer autoClose={3000} theme="dark" />
